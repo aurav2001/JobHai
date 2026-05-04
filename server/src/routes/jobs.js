@@ -13,6 +13,7 @@ const { recommendJobs } = require('../services/aiRecommend');
 
 // GET /api/jobs/search
 router.get('/search', optionalAuth, async (req, res, next) => {
+    console.log('[Jobs] Search hit:', req.query);
     try {
         const {
             q, location, type, category, minSalary, maxSalary,

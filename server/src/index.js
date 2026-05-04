@@ -19,14 +19,35 @@ const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
 
+// ── CORS Middleware (must be before helmet for Vercel serverless) ─────────────
+const allowedOrigins = [
+    'https://jobhai-cyan.vercel.app',
+    (process.env.FRONTEND_URL || '').trim(),
+    'http://localhost:5173',
+    'http://localhost:3000'
+].filter(Boolean);
+
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+    next();
+});
+
 // ── Security Middleware ──────────────────────────────────────────────────────
-app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
-app.use(cors({
-    origin: [process.env.FRONTEND_URL || 'http://localhost:5173', 'http://localhost:3000'],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: false,
 }));
+
 
 // ── Rate Limiting ────────────────────────────────────────────────────────────
 const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100, message: { success: false, message: 'Too many requests, please try again later.' } });
@@ -60,7 +81,19 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // ── Health Check ─────────────────────────────────────────────────────────────
-app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
+app.get('/health', async (req, res) => {
+    const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+    const missingVars = [
+        'MONGODB_URI', 'JWT_SECRET', 'FRONTEND_URL'
+    ].filter(v => !process.env[v]);
+
+    res.json({
+        status: 'ok',
+        database: dbStatus,
+        missingEnvVars: missingVars.length > 0 ? missingVars : 'none',
+        timestamp: new Date().toISOString()
+    });
+});
 
 // ── Routes ────────────────────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
@@ -76,23 +109,30 @@ app.use((req, res) => res.status(404).json({ success: false, message: 'Route not
 app.use(errorHandler);
 
 // ── Database + Server ─────────────────────────────────────────────────────────
-const PORT = process.env.PORT || 5000;
-
 const connectDB = async () => {
     try {
-        await mongoose.connect(process.env.MONGODB_URI, { dbName: 'jobhai' });
-        console.log('✅ MongoDB connected');
-        app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+        if (mongoose.connection.readyState === 0) {
+            await mongoose.connect(process.env.MONGODB_URI, { dbName: 'jobhai' });
+            console.log('✅ MongoDB connected');
+        }
     } catch (err) {
         console.error('❌ MongoDB connection failed:', err.message);
-        console.warn('⚠️  The server is starting WITHOUT a database connection. Some features will not work.');
-        console.warn('💡 Tip: If you see "ECONNREFUSED", ensure your current IP is whitelisted in MongoDB Atlas (Network Access tab).');
-
-        // Start server anyway even if DB fails, to allow diagnostics/docs
-        app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT} (Database disconnected)`));
+        console.warn('⚠️  Database connection failed. Check MONGODB_URI and IP Whitelist.');
     }
 };
 
-connectDB();
+// For Vercel, we export the app and don't call listen. 
+// For local development, we call connectDB and then listen.
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+    const PORT = process.env.PORT || 5000;
+    connectDB().then(() => {
+        if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+            app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+        }
+    });
+} else {
+    // On Vercel, we still need to initiate the connection
+    connectDB();
+}
 
 module.exports = app;
