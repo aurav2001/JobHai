@@ -118,7 +118,7 @@ app.use(errorHandler);
 // ── Database + Server ─────────────────────────────────────────────────────────
 let lastDbError = null;
 const connectDB = async () => {
-    if (mongoose.connection.readyState >= 1) return;
+    if (mongoose.connection.readyState === 1) return;
 
     try {
         console.log('🔄 Attempting to connect to MongoDB...');
