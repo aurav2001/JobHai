@@ -1,4 +1,4 @@
-require('dotenv').config(); // Load environment variables
+require('dotenv').config(); // Load environment variables (for local dev; Vercel uses dashboard env vars)
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -18,6 +18,9 @@ const notificationRoutes = require('./routes/notifications');
 const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
+
+// Enable trust proxy for Vercel/proxies
+app.set('trust proxy', 1);
 
 // ── CORS Middleware (must be before helmet for Vercel serverless) ─────────────
 const allowedOrigins = [
@@ -80,8 +83,10 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// ── Health Check ─────────────────────────────────────────────────────────────
+// ── Health Check (before DB middleware so it always responds) ────────────────
 app.get('/health', async (req, res) => {
+    // Try connecting before reporting status
+    await connectDB();
     const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
     const missingVars = [
         'MONGODB_URI', 'JWT_SECRET', 'FRONTEND_URL'
@@ -92,14 +97,30 @@ app.get('/health', async (req, res) => {
         database: dbStatus,
         error: lastDbError,
         missingEnvVars: missingVars.length > 0 ? missingVars : 'none',
+        mongoUri: process.env.MONGODB_URI ? '✅ SET (hidden)' : '❌ NOT SET',
         timestamp: new Date().toISOString()
     });
 });
 
 // ── Database Connection Middleware ──────────────────────────────────────────
 app.use(async (req, res, next) => {
-    await connectDB();
-    next();
+    try {
+        await connectDB();
+        if (mongoose.connection.readyState !== 1) {
+            return res.status(503).json({
+                success: false,
+                message: 'Database connection unavailable. Please try again.',
+                error: lastDbError
+            });
+        }
+        next();
+    } catch (err) {
+        return res.status(503).json({
+            success: false,
+            message: 'Database connection failed',
+            error: err.message
+        });
+    }
 });
 
 // ── Root Route ──────────────────────────────────────────────────────────────
@@ -108,6 +129,7 @@ app.get('/', (req, res) => {
         success: true,
         message: 'Welcome to JobHai API',
         status: 'Server is running',
+        database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
         endpoints: {
             health: '/health',
             docs: '/api-docs',
@@ -131,26 +153,42 @@ app.use(errorHandler);
 
 // ── Database + Server ─────────────────────────────────────────────────────────
 let lastDbError = null;
+let cachedConnection = null;
+
 const connectDB = async () => {
+    // If already connected, skip
     if (mongoose.connection.readyState === 1) return;
+    
+    // If currently connecting, wait for it
+    if (mongoose.connection.readyState === 2) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return;
+    }
 
     try {
         console.log('🔄 Attempting to connect to MongoDB...');
+        console.log('🔑 MONGODB_URI defined:', !!process.env.MONGODB_URI);
+        
         if (!process.env.MONGODB_URI) {
-            throw new Error('MONGODB_URI is not defined');
+            throw new Error('MONGODB_URI environment variable is not defined. Set it in Vercel Dashboard > Settings > Environment Variables.');
         }
         
-        await mongoose.connect(process.env.MONGODB_URI, { 
+        // Mongoose connection options optimized for serverless
+        mongoose.set('bufferCommands', false);
+        
+        cachedConnection = await mongoose.connect(process.env.MONGODB_URI, { 
             dbName: 'jobhai',
             serverSelectionTimeoutMS: 10000,
             socketTimeoutMS: 45000,
+            maxPoolSize: 10,
         });
         lastDbError = null;
-        console.log('✅ MongoDB connected successfully');
+        console.log('✅ MongoDB connected successfully to database: jobhai');
     } catch (err) {
         lastDbError = err.message;
+        cachedConnection = null;
         console.error('❌ MongoDB connection failed:', err.message);
-        console.warn('⚠️  Check MONGODB_URI, IP Whitelist (0.0.0.0/0), and Database Credentials.');
+        console.warn('⚠️  Check: 1) MONGODB_URI env var in Vercel Dashboard, 2) IP Whitelist 0.0.0.0/0 in Atlas, 3) Database credentials.');
     }
 };
 
@@ -163,8 +201,6 @@ if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
             app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
         }
     });
-} else {
-    // Connection handled by middleware for Vercel
 }
 
 module.exports = app;
