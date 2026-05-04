@@ -95,6 +95,12 @@ app.get('/health', async (req, res) => {
     });
 });
 
+// ── Database Connection Middleware ──────────────────────────────────────────
+app.use(async (req, res, next) => {
+    await connectDB();
+    next();
+});
+
 // ── Routes ────────────────────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
 app.use('/api/jobs', jobRoutes);
@@ -141,8 +147,7 @@ if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
         }
     });
 } else {
-    // On Vercel, we still need to initiate the connection
-    connectDB();
+    // Connection handled by middleware for Vercel
 }
 
 module.exports = app;
