@@ -90,6 +90,7 @@ app.get('/health', async (req, res) => {
     res.json({
         status: 'ok',
         database: dbStatus,
+        error: lastDbError,
         missingEnvVars: missingVars.length > 0 ? missingVars : 'none',
         timestamp: new Date().toISOString()
     });
@@ -115,24 +116,26 @@ app.use((req, res) => res.status(404).json({ success: false, message: 'Route not
 app.use(errorHandler);
 
 // ── Database + Server ─────────────────────────────────────────────────────────
+let lastDbError = null;
 const connectDB = async () => {
     if (mongoose.connection.readyState >= 1) return;
 
     try {
         console.log('🔄 Attempting to connect to MongoDB...');
         if (!process.env.MONGODB_URI) {
-            throw new Error('MONGODB_URI is not defined in environment variables');
+            throw new Error('MONGODB_URI is not defined');
         }
         
         await mongoose.connect(process.env.MONGODB_URI, { 
             dbName: 'jobhai',
-            serverSelectionTimeoutMS: 10000, // 10 seconds timeout
+            serverSelectionTimeoutMS: 10000,
             socketTimeoutMS: 45000,
         });
+        lastDbError = null;
         console.log('✅ MongoDB connected successfully');
     } catch (err) {
+        lastDbError = err.message;
         console.error('❌ MongoDB connection failed:', err.message);
-        console.error('Error Stack:', err.stack);
         console.warn('⚠️  Check MONGODB_URI, IP Whitelist (0.0.0.0/0), and Database Credentials.');
     }
 };
