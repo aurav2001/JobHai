@@ -110,14 +110,24 @@ app.use(errorHandler);
 
 // ── Database + Server ─────────────────────────────────────────────────────────
 const connectDB = async () => {
+    if (mongoose.connection.readyState >= 1) return;
+
     try {
-        if (mongoose.connection.readyState === 0) {
-            await mongoose.connect(process.env.MONGODB_URI, { dbName: 'jobhai' });
-            console.log('✅ MongoDB connected');
+        console.log('🔄 Attempting to connect to MongoDB...');
+        if (!process.env.MONGODB_URI) {
+            throw new Error('MONGODB_URI is not defined in environment variables');
         }
+        
+        await mongoose.connect(process.env.MONGODB_URI, { 
+            dbName: 'jobhai',
+            serverSelectionTimeoutMS: 10000, // 10 seconds timeout
+            socketTimeoutMS: 45000,
+        });
+        console.log('✅ MongoDB connected successfully');
     } catch (err) {
         console.error('❌ MongoDB connection failed:', err.message);
-        console.warn('⚠️  Database connection failed. Check MONGODB_URI and IP Whitelist.');
+        console.error('Error Stack:', err.stack);
+        console.warn('⚠️  Check MONGODB_URI, IP Whitelist (0.0.0.0/0), and Database Credentials.');
     }
 };
 
