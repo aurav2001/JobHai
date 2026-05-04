@@ -102,6 +102,20 @@ app.use(async (req, res, next) => {
     next();
 });
 
+// ── Root Route ──────────────────────────────────────────────────────────────
+app.get('/', (req, res) => {
+    res.json({
+        success: true,
+        message: 'Welcome to JobHai API',
+        status: 'Server is running',
+        endpoints: {
+            health: '/health',
+            docs: '/api-docs',
+            jobs: '/api/jobs/search'
+        }
+    });
+});
+
 // ── Routes ────────────────────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
 app.use('/api/jobs', jobRoutes);
