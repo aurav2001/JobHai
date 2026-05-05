@@ -153,42 +153,44 @@ app.use(errorHandler);
 
 // ── Database + Server ─────────────────────────────────────────────────────────
 let lastDbError = null;
-let cachedConnection = null;
+let cachedDb = null;
 
 const connectDB = async () => {
-    // If already connected, skip
-    if (mongoose.connection.readyState === 1) return;
+    if (mongoose.connection.readyState === 1) return mongoose.connection;
     
-    // If currently connecting, wait for it
-    if (mongoose.connection.readyState === 2) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        return;
+    if (cachedDb) {
+        try {
+            await cachedDb;
+            return mongoose.connection;
+        } catch (err) {
+            cachedDb = null; // Reset on error
+        }
     }
 
     try {
         console.log('🔄 Attempting to connect to MongoDB...');
-        console.log('🔑 MONGODB_URI defined:', !!process.env.MONGODB_URI);
-        
         if (!process.env.MONGODB_URI) {
-            throw new Error('MONGODB_URI environment variable is not defined. Set it in Vercel Dashboard > Settings > Environment Variables.');
+            throw new Error('MONGODB_URI environment variable is not defined.');
         }
-        
-        // Mongoose connection options optimized for serverless
+
         mongoose.set('bufferCommands', false);
         
-        cachedConnection = await mongoose.connect(process.env.MONGODB_URI, { 
+        cachedDb = mongoose.connect(process.env.MONGODB_URI, { 
             dbName: 'jobhai',
-            serverSelectionTimeoutMS: 10000,
+            serverSelectionTimeoutMS: 5000,
             socketTimeoutMS: 45000,
-            maxPoolSize: 10,
+            maxPoolSize: 1, // Reduced for serverless to prevent too many connections
         });
+
+        await cachedDb;
         lastDbError = null;
-        console.log('✅ MongoDB connected successfully to database: jobhai');
+        console.log('✅ MongoDB connected successfully');
+        return mongoose.connection;
     } catch (err) {
         lastDbError = err.message;
-        cachedConnection = null;
+        cachedDb = null;
         console.error('❌ MongoDB connection failed:', err.message);
-        console.warn('⚠️  Check: 1) MONGODB_URI env var in Vercel Dashboard, 2) IP Whitelist 0.0.0.0/0 in Atlas, 3) Database credentials.');
+        throw err;
     }
 };
 

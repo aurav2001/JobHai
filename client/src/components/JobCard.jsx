@@ -5,7 +5,12 @@ import { formatDistanceToNow } from 'date-fns';
 export default function JobCard({ job }) {
     const formatSalary = (salary) => {
         if (!salary || (!salary.min && !salary.max)) return 'Not disclosed';
-        const fmt = (n) => n >= 100000 ? `₹${(n / 100000).toFixed(1)}L` : `₹${(n / 1000).toFixed(0)}K`;
+        const fmt = (n) => {
+            if (n === 0) return '0';
+            if (n < 1000) return `₹${n}L`;
+            if (n >= 100000) return `₹${(n / 100000).toFixed(1)}L`;
+            return `₹${(n / 1000).toFixed(0)}K`;
+        };
         return `${fmt(salary.min)} – ${fmt(salary.max)} / yr`;
     };
 
