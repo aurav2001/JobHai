@@ -42,7 +42,7 @@ router.post(
             const user = new User(userData);
             await user.save();
 
-            const verifyLink = `${process.env.FRONTEND_URL}/verify-email?token=${verifyToken}&email=${email}`;
+            const verifyLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify-email?token=${verifyToken}&email=${email}`;
             await sendEmail({ to: email, subject: 'Verify your JobHai account', html: emailTemplates.verifyEmail(name, verifyLink) });
 
             const token = generateToken({ id: user._id, role: user.role });
@@ -63,12 +63,19 @@ router.post(
         try {
             const { email, password } = req.body;
             const user = await User.findOne({ email });
-            if (!user || !user.passwordHash) {
+            
+            if (!user) {
                 return res.status(401).json({ success: false, message: 'Invalid email or password' });
             }
+            
             const match = await user.comparePassword(password);
-            if (!match) return res.status(401).json({ success: false, message: 'Invalid email or password' });
-            if (!user.isActive) return res.status(403).json({ success: false, message: 'Account suspended' });
+            if (!match) {
+                return res.status(401).json({ success: false, message: 'Invalid email or password' });
+            }
+            
+            if (!user.isActive) {
+                return res.status(403).json({ success: false, message: 'Account suspended' });
+            }
 
             const token = generateToken({ id: user._id, role: user.role });
             res.json({ success: true, token, user });
@@ -111,7 +118,7 @@ router.post(
             user.resetPasswordExpires = Date.now() + 60 * 60 * 1000; // 1 hour
             await user.save();
 
-            const link = `${process.env.FRONTEND_URL}/reset-password?token=${token}&email=${email}`;
+            const link = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${token}&email=${email}`;
             await sendEmail({ to: email, subject: 'Reset your JobHai password', html: emailTemplates.resetPassword(user.name, link) });
             res.json({ success: true, message: 'If that email exists, a reset link has been sent.' });
         } catch (err) { next(err); }
@@ -161,7 +168,7 @@ router.put(
         try {
             const allowedFields = ['name', 'phone', 'location', 'bio', 'skills', 'experience', 'education',
                 'currentSalary', 'expectedSalary', 'noticePeriod', 'socialLinks',
-                'companyName', 'companyWebsite', 'companyDescription', 'companySize', 'industry',
+                'companyName', 'companyLogo', 'companyWebsite', 'companyDescription', 'companySize', 'industry',
                 'jobPreferences'];
             const updates = {};
             allowedFields.forEach(f => { if (req.body[f] !== undefined) updates[f] = req.body[f]; });
@@ -175,7 +182,7 @@ router.put(
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 router.get('/google/callback', passport.authenticate('google', { session: false, failureRedirect: '/sign-in' }), (req, res) => {
     const token = generateToken({ id: req.user._id, role: req.user.role });
-    res.redirect(`${process.env.FRONTEND_URL}/auth/callback?token=${token}`);
+    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth/callback?token=${token}`);
 });
 
 module.exports = router;
