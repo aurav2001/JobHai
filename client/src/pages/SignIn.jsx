@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { authAPI } from '../lib/api';
+import { authAPI, API_BASE_URL } from '../lib/api';
 import { useAuth } from '../lib/AuthContext';
 import toast from 'react-hot-toast';
 import { Eye, EyeOff, Briefcase, LogIn } from 'lucide-react';
@@ -86,7 +86,7 @@ export default function SignIn() {
                     </div>
                 </div>
 
-                <a href="http://localhost:5000/api/auth/google"
+                <a href={`${API_BASE_URL}/auth/google`}
                     className="btn-secondary w-full py-3.5 flex items-center justify-center gap-3 text-xs font-bold uppercase tracking-widest hover:bg-slate-50 transition-all border-slate-200">
                     <svg viewBox="0 0 24 24" width="20" height="20">
                         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
