@@ -5,7 +5,7 @@ const cloudinary = require('../services/cloudinary');
 const resumeStorage = new CloudinaryStorage({
     cloudinary,
     params: {
-        folder: 'jobhai/resumes',
+        folder: 'naukrimitra/resumes',
         allowed_formats: ['pdf', 'doc', 'docx'],
         resource_type: 'raw',
     },
@@ -14,7 +14,7 @@ const resumeStorage = new CloudinaryStorage({
 const avatarStorage = new CloudinaryStorage({
     cloudinary,
     params: {
-        folder: 'jobhai/avatars',
+        folder: 'naukrimitra/avatars',
         allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
         transformation: [{ width: 400, height: 400, crop: 'fill' }],
     },

@@ -43,7 +43,7 @@ router.post(
             await user.save();
 
             const verifyLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify-email?token=${verifyToken}&email=${email}`;
-            await sendEmail({ to: email, subject: 'Verify your JobHai account', html: emailTemplates.verifyEmail(name, verifyLink) });
+            await sendEmail({ to: email, subject: 'Verify your NaukriMitra account', html: emailTemplates.verifyEmail(name, verifyLink) });
 
             const token = generateToken({ id: user._id, role: user.role });
             res.status(201).json({ success: true, message: 'Account created. Please verify your email.', token, user });
@@ -119,7 +119,7 @@ router.post(
             await user.save();
 
             const link = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${token}&email=${email}`;
-            await sendEmail({ to: email, subject: 'Reset your JobHai password', html: emailTemplates.resetPassword(user.name, link) });
+            await sendEmail({ to: email, subject: 'Reset your NaukriMitra password', html: emailTemplates.resetPassword(user.name, link) });
             res.json({ success: true, message: 'If that email exists, a reset link has been sent.' });
         } catch (err) { next(err); }
     }

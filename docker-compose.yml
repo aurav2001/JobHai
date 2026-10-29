@@ -8,14 +8,14 @@ services:
     volumes:
       - mongo_data:/data/db
     environment:
-      MONGO_INITDB_DATABASE: jobhai
+      MONGO_INITDB_DATABASE: naukrimitra
 
   server:
     build: ./server
     ports:
       - "5000:5000"
     environment:
-      - MONGODB_URI=mongodb://mongo:27017/jobhai
+      - MONGODB_URI=mongodb://mongo:27017/naukrimitra
       - JWT_SECRET=change_this_in_production
       - FRONTEND_URL=http://localhost:3000
       - SERVER_URL=http://localhost:5000

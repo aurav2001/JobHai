@@ -1,4 +1,10 @@
 require('dotenv').config(); // Load environment variables (for local dev; Vercel uses dashboard env vars)
+const dns = require('dns');
+// Ensure SRV records for MongoDB Atlas resolve cleanly on Windows
+try {
+    dns.setServers(['8.8.8.8', '1.1.1.1']);
+} catch (_) {}
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -72,7 +78,7 @@ app.use(passport.initialize());
 const swaggerOptions = {
     definition: {
         openapi: '3.0.0',
-        info: { title: 'JobHai API', version: '1.0.0', description: 'Job Portal REST API' },
+        info: { title: 'NaukriMitra API', version: '1.0.0', description: 'NaukriMitra Job Portal REST API' },
         servers: [{ url: process.env.SERVER_URL || 'http://localhost:5000' }],
         components: {
             securitySchemes: { BearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' } },
@@ -127,7 +133,7 @@ app.use(async (req, res, next) => {
 app.get('/', (req, res) => {
     res.json({
         success: true,
-        message: 'Welcome to JobHai API',
+        message: 'Welcome to NaukriMitra API',
         status: 'Server is running',
         database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
         endpoints: {
@@ -195,13 +201,14 @@ const connectDB = async () => {
 };
 
 // For Vercel, we export the app and don't call listen. 
-// For local development, we call connectDB and then listen.
+// For local development, we listen and connect to DB.
 if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
     const PORT = process.env.PORT || 5000;
-    connectDB().then(() => {
-        if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
-            app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
-        }
+    app.listen(PORT, () => {
+        console.log(`🚀 Server running on http://localhost:${PORT}`);
+        connectDB().catch(err => {
+            console.error('⚠️  MongoDB connection issue:', err.message);
+        });
     });
 }
 

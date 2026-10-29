@@ -98,7 +98,7 @@ export default function SignIn() {
                 </a>
 
                 <p className="text-center text-xs font-bold text-slate-400 mt-10 uppercase tracking-widest">
-                    New to JobHai?{' '}
+                    New to NaukriMitra?{' '}
                     <Link to="/sign-up" className="text-blue-600 hover:underline">Join Now</Link>
                 </p>
             </div>

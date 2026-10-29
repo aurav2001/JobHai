@@ -35,7 +35,7 @@ export default function Navbar() {
                                 <Briefcase size={22} strokeWidth={2.5} />
                             </div>
                             <span className="text-xl font-extrabold tracking-tight text-slate-900">
-                                Job<span className="text-blue-600">Hai</span>
+                                Naukri<span className="text-blue-600">Mitra</span>
                             </span>
                         </Link>
 

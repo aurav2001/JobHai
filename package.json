@@ -1,7 +1,7 @@
 {
-  "name": "job-hai-site",
+  "name": "naukrimitra",
   "version": "1.0.0",
-  "description": "",
+  "description": "NaukriMitra — Next-Gen Job Discovery & Hiring Platform for India",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

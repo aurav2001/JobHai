@@ -12,7 +12,7 @@ export default function Footer() {
                             <div className="bg-blue-600 text-white rounded-xl p-1.5">
                                 <Briefcase size={20} strokeWidth={2.5} />
                             </div>
-                            <span className="text-xl font-bold tracking-tight text-white">JobHai</span>
+                            <span className="text-xl font-bold tracking-tight text-white">NaukriMitra</span>
                         </Link>
                         <p className="text-sm leading-relaxed mb-6">
                             India's fastest growing job portal. Connecting millions of blue-collar and white-collar professionals with top employers.
@@ -49,7 +49,7 @@ export default function Footer() {
                     <div>
                         <h3 className="text-white font-bold mb-6">Support</h3>
                         <ul className="space-y-4 text-sm">
-                            <li className="flex items-center gap-3"><Mail size={16} className="text-blue-500" /> support@jobhai.com</li>
+                            <li className="flex items-center gap-3"><Mail size={16} className="text-blue-500" /> support@naukrimitra.com</li>
                             <li className="flex items-center gap-3"><Phone size={16} className="text-blue-500" /> +91 98765 43210</li>
                             <li className="flex items-center gap-3"><MapPin size={16} className="text-blue-500" /> Bengaluru, India</li>
                         </ul>
@@ -57,7 +57,7 @@ export default function Footer() {
                 </div>
 
                 <div className="mt-16 pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-medium uppercase tracking-widest text-slate-500">
-                    <p>© {new Date().getFullYear()} JobHai Site. All rights reserved.</p>
+                    <p>© {new Date().getFullYear()} NaukriMitra. All rights reserved.</p>
                     <div className="flex gap-8">
                         <button className="hover:text-slate-300">Privacy Policy</button>
                         <button className="hover:text-slate-300">Terms of Service</button>

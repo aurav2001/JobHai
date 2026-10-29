@@ -174,7 +174,7 @@ router.post(
             const link = `${process.env.FRONTEND_URL}/team/accept?employer=${req.user._id}&email=${email}`;
             await sendEmail({
                 to: email,
-                subject: `You're invited to join ${req.user.companyName || 'the team'} on JobHai`,
+                subject: `You're invited to join ${req.user.companyName || 'the team'} on NaukriMitra`,
                 html: emailTemplates.teamInvite(req.user.name, req.user.companyName || 'the company', link),
             });
 

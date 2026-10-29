@@ -1,305 +1,217 @@
-# JobHai — Full-Stack Job Portal
+# 🚀 NaukriMitra — Next-Gen Job Discovery & Hiring Platform
 
-A production-ready job portal application (JobHai.com clone) built with **Next.js 14**, **Express.js**, and **MongoDB**.
-
----
-
-## 🚀 Features
-
-| Feature | Status |
-|---|---|
-| User Roles: Guest, Job Seeker, Employer, Admin | ✅ |
-| JWT + Google OAuth Authentication | ✅ |
-| Email Verification & Password Reset | ✅ |
-| Job Search (keyword, location, type, salary, category) | ✅ |
-| Job Filters + Paginated Results | ✅ |
-| Apply for Jobs with Resume Upload (Cloudinary) | ✅ |
-| Direct Recruiter Contact (phone/email) | ✅ |
-| Online Resume Builder | ✅ |
-| Employer Dashboard (post/manage/delete jobs) | ✅ |
-| Employer Team Management (invite/remove) | ✅ |
-| Admin Panel (stats, users, job moderation) | ✅ |
-| Email Notifications (Nodemailer + Gmail) | ✅ |
-| AI Job Recommendations (cosine similarity) | ✅ |
-| Swagger API Docs | ✅ |
-| Docker Support | ✅ |
+<p align="center">
+  <img src="https://img.shields.io/badge/Platform-NaukriMitra-blue?style=for-the-badge&logo=target" alt="NaukriMitra" />
+  <img src="https://img.shields.io/badge/React-19.2-61dafb?style=for-the-badge&logo=react" alt="React" />
+  <img src="https://img.shields.io/badge/Vite-7.3-646CFF?style=for-the-badge&logo=vite" alt="Vite" />
+  <img src="https://img.shields.io/badge/Node.js-Express-339933?style=for-the-badge&logo=node.js" alt="Node" />
+  <img src="https://img.shields.io/badge/MongoDB-Mongoose-47A248?style=for-the-badge&logo=mongodb" alt="MongoDB" />
+  <img src="https://img.shields.io/badge/TailwindCSS-v4-38B2AC?style=for-the-badge&logo=tailwind-css" alt="Tailwind" />
+  <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License" />
+</p>
 
 ---
 
-## 📁 Project Structure
+## 🌟 Overview
+
+**NaukriMitra** is a full-stack, enterprise-grade job discovery and talent acquisition ecosystem tailored for the Indian employment landscape. Built with a lightning-fast **React 19 + Vite** frontend, a scalable **Express.js** REST API backend, and **MongoDB**, it connects millions of job seekers with vetted employers and automated career tools.
+
+Whether hiring blue-collar, grey-collar, or white-collar professionals, **NaukriMitra** streamlines candidate matching with intelligent filters, AI recommendations, direct recruiter contact, online resume generation, and multi-role dashboards.
+
+---
+
+## 🚀 Key Features
+
+### 👤 Candidate Features (Job Seekers)
+- **Smart Job Search**: Filter by keyword, location, salary range, job type (Full-time, Part-time, Remote, Contract), and category.
+- **One-Click Apply**: Apply instantly with Cloudinary-backed resume uploads (PDF/DOCX) or auto-fill from user profile.
+- **Direct Recruiter Connect**: Direct phone and email contact with hiring managers for accelerated placement.
+- **Interactive Resume Builder**: Create, preview, and download professional resumes directly in the browser.
+- **Personalized Candidate Hub**: Track application status, saved jobs, notifications, and profile completeness.
+
+### 🏢 Employer Hub (Hiring Teams)
+- **Job Posting & Lifecycle Management**: Post jobs, edit descriptions, toggle active/closed status, and set custom requirements.
+- **Applicant Tracking System (ATS)**: Review applicant resumes, update candidate stages (Pending, Shortlisted, Interviewed, Rejected, Hired).
+- **Team Management & Role Delegation**: Invite recruiters or team members via email to collaborate on hiring drives.
+- **Email Alerts**: Automated notifications when candidates apply or application statuses change.
+
+### 🛡️ Admin Panel & Governance
+- **Platform Analytics**: Total users, active jobs, employer metrics, and application counts.
+- **Job Moderation**: Review pending job posts before they go live on the platform.
+- **User Management**: Activate/deactivate accounts, moderate user profiles, and inspect system audit logs.
+
+### ⚡ Technology & AI Enhancements
+- **AI Recommendation Engine**: Content-based similarity scoring (cosine similarity on skills & job requirements).
+- **Automated Email Notifications**: Verification emails, password resets, and hiring updates via Nodemailer.
+- **Interactive Swagger Documentation**: Live API testbed accessible at `/api-docs`.
+- **Rock-Solid Security**: JWT tokens, bcrypt password hashing, HTTP-only cookies, Helmet, and rate limiting.
+
+---
+
+## 🏗️ Architecture
+
+```mermaid
+graph TD
+    Client["React 19 + Vite Frontend (Port 5173)"]
+    API["Express.js REST API Server (Port 5000)"]
+    DB[(MongoDB Database)]
+    Cloudinary[("Cloudinary (Media & Resumes)")]
+    SMTP["Nodemailer (Gmail SMTP)"]
+    Swagger["Swagger UI (/api-docs)"]
+
+    Client -->|HTTP / Axios / JWT| API
+    API -->|Mongoose ODM| DB
+    API -->|Multer Storage| Cloudinary
+    API -->|Transactional Emails| SMTP
+    API -->|OpenAPI Spec| Swagger
+```
+
+---
+
+## 📁 Repository Structure
 
 ```
-Job Hai Site/
-├── server/          # Express.js REST API (port 5000)
+NaukriMitra/
+├── client/                     # Frontend Application (React 19 + Vite)
+│   ├── public/                 # Static assets
 │   ├── src/
-│   │   ├── models/      # User, Job, Application, Team, Notification
-│   │   ├── routes/      # auth, jobs, employer, admin, notifications
-│   │   ├── middleware/  # auth, validate, upload, errorHandler
-│   │   ├── services/    # email, cloudinary, aiRecommend
-│   │   └── utils/       # helpers (JWT, pagination)
-│   ├── .env.example
-│   └── Dockerfile
+│   │   ├── components/         # Reusable UI (Navbar, Footer, JobCard)
+│   │   ├── lib/                # API client (Axios) & AuthContext
+│   │   ├── pages/              # Home, Search, JobDetails, PostJob, Profile, etc.
+│   │   ├── App.jsx             # Route definitions
+│   │   └── main.jsx            # React root
+│   ├── index.html              # HTML shell & font definitions
+│   ├── vite.config.js          # Vite build config
+│   └── package.json            # Frontend dependencies
 │
-├── client/          # Next.js 14 App Router (port 3000)
-│   ├── app/
-│   │   ├── page.tsx           # Home
-│   │   ├── search/            # Search results
-│   │   ├── jobs/[id]/         # Job details
-│   │   ├── sign-in/           # Login
-│   │   ├── sign-up/           # Register
-│   │   ├── profile/           # Candidate profile
-│   │   ├── resume-builder/    # Online resume builder
-│   │   ├── employer/          # dashboard, post-job
-│   │   └── admin/             # Admin panel
-│   ├── components/    # Navbar, Footer, JobCard
-│   ├── lib/           # api.js, AuthContext.jsx
-│   ├── .env.local.example
-│   └── Dockerfile
+├── server/                     # Backend API (Express.js + Node)
+│   ├── src/
+│   │   ├── middleware/         # Auth, validation, uploads, error handling
+│   │   ├── models/             # User, Job, Application, Team, Notification
+│   │   ├── routes/             # auth, jobs, employer, admin, notifications
+│   │   ├── services/           # Cloudinary, Email, AI recommendation
+│   │   ├── utils/              # Helper utilities
+│   │   ├── index.js            # Express server initialization
+│   │   └── passport.js         # OAuth strategy configuration
+│   ├── seed-admin.js           # Admin initialization script
+│   └── package.json            # Backend dependencies
 │
-├── docker-compose.yml
-└── README.md
+├── docker-compose.yml          # Containerized deployment config
+├── README.md                   # Project documentation
+└── package.json                # Root package metadata
 ```
 
 ---
 
-## ⚡ Quick Start (Local Development)
+## ⚡ Quick Start (Local Setup)
 
 ### Prerequisites
-- Node.js 18+
-- MongoDB (local or Atlas)
-- Cloudinary account (for file uploads)
-- Gmail account (for email — enable App Password)
+- **Node.js**: v18.0.0 or higher
+- **MongoDB**: Local MongoDB instance or free MongoDB Atlas cluster
+
+---
 
 ### 1. Backend Setup
 
 ```bash
 cd server
 
-# Copy env file and fill in values
-cp .env.example .env
-
-# Install dependencies
+# 1. Install dependencies
 npm install
 
-# Start development server (port 5000)
+# 2. Configure environment variables in server/.env
+# (Refer to .env.example for required variables)
+
+# 3. Seed an initial admin user (Optional)
+node seed-admin.js
+
+# 4. Start backend in development mode (Runs on http://localhost:5000)
 npm run dev
 ```
+
+---
 
 ### 2. Frontend Setup
 
 ```bash
 cd client
 
-# Copy env file
-cp .env.local.example .env.local
-
-# Install dependencies
+# 1. Install dependencies
 npm install
 
-# Start Next.js dev server (port 3000)
+# 2. Start Vite development server (Runs on http://localhost:5173)
 npm run dev
 ```
 
-Visit **http://localhost:3000** 🎉
+Open your browser at **[http://localhost:5173](http://localhost:5173)** to explore NaukriMitra.
 
 ---
 
-## 🔑 Environment Variables
+## 🔑 Environment Configuration
 
-### Server (`server/.env`)
-
-```env
-MONGODB_URI=mongodb+srv://<user>:<pass>@cluster.mongodb.net/jobhai
-JWT_SECRET=change_this_long_random_secret
-FRONTEND_URL=http://localhost:3000
-SERVER_URL=http://localhost:5000
-GOOGLE_CLIENT_ID=<from google cloud console>
-GOOGLE_CLIENT_SECRET=<from google cloud console>
-CLOUDINARY_CLOUD_NAME=<your cloudinary name>
-CLOUDINARY_API_KEY=<your cloudinary api key>
-CLOUDINARY_API_SECRET=<your cloudinary api secret>
-SMTP_EMAIL=your@gmail.com
-SMTP_PASSWORD=your_app_password   # Gmail App Password, NOT your regular password
-NODE_ENV=development
+### `server/.env`
+```ini
+# Database
+MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/naukrimitra
 PORT=5000
+NODE_ENV=development
+
+# JWT Security
+JWT_SECRET=your_super_secret_jwt_key_here
+
+# URLs
+FRONTEND_URL=http://localhost:5173
+SERVER_URL=http://localhost:5000
+
+# Cloudinary (Resume & Avatar storage)
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+
+# Email Service (Gmail App Password)
+SMTP_EMAIL=your_email@gmail.com
+SMTP_PASSWORD=your_gmail_app_password
+
+# Admin Credentials
+ADMIN_EMAIL=admin@naukrimitra.com
+ADMIN_PASSWORD=Admin@123
 ```
 
-### Client (`client/.env.local`)
-
-```env
-NEXT_PUBLIC_API_URL=http://localhost:5000/api
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+### `client/.env`
+```ini
+VITE_API_URL=http://localhost:5000/api
+VITE_APP_URL=http://localhost:5173
 ```
 
 ---
 
-## 🐳 Docker (Local Full Stack)
+## 📡 API Endpoints Overview
 
-```bash
-# From repo root
-docker-compose up --build
-
-# Services:
-# - MongoDB:  localhost:27017
-# - Server:   localhost:5000
-# - Client:   localhost:3000
-```
-
----
-
-## 🌐 Deployment
-
-### Option A: Vercel (Frontend) + Railway (Backend)
-
-#### Deploy Backend to Railway
-1. Go to [railway.app](https://railway.app) → New Project → Deploy from GitHub
-2. Select the `Job Hai Site/server` subdirectory
-3. Set all environment variables from `server/.env.example`
-4. Railway will auto-build and deploy. Copy the deployed URL.
-
-#### Deploy Frontend to Vercel
-1. Go to [vercel.com](https://vercel.com) → New Project → Import from GitHub
-2. Set **Root Directory** to `client`
-3. Add environment variable: `NEXT_PUBLIC_API_URL=https://<your-railway-url>/api`
-4. Deploy 🚀
-
-### Option B: Docker on a VPS
-
-```bash
-# On your VPS (Ubuntu):
-git clone <your-repo>
-cd JobHai
-
-# Set environment variables
-cp server/.env.example server/.env
-# Edit server/.env with real values
-
-docker-compose -f docker-compose.yml up -d --build
-```
-
-Configure Nginx as reverse proxy:
-- `localhost:3000` → your domain
-- `localhost:5000` → your API subdomain (e.g., `api.yoursite.com`)
-
----
-
-## 📡 API Documentation
-
-Interactive Swagger UI is available at:
-```
-http://localhost:5000/api-docs
-```
-
-### Key Endpoints
-
-| Method | Endpoint | Auth | Description |
+| Method | Endpoint | Description | Access |
 |---|---|---|---|
-| POST | `/api/auth/signup` | — | Register |
-| POST | `/api/auth/login` | — | Login (returns JWT) |
-| GET | `/api/auth/verify-email` | — | Verify email token |
-| GET | `/api/auth/google` | — | Google OAuth |
-| GET | `/api/auth/me` | JWT | Get current user |
-| PUT | `/api/auth/profile` | JWT | Update profile |
-| GET | `/api/jobs/search` | — | Search & filter jobs |
-| GET | `/api/jobs/:id` | — | Job details |
-| POST | `/api/jobs/apply` | Jobseeker | Apply with resume |
-| GET | `/api/jobs/recommended` | Jobseeker | AI recommendations |
-| POST | `/api/employer/jobs` | Employer | Create job |
-| PUT | `/api/employer/jobs/:id` | Employer | Update job |
-| GET | `/api/employer/jobs` | Employer | List own jobs |
-| GET | `/api/employer/applications/:jobId` | Employer | View applicants |
-| PUT | `/api/employer/applications/:id/status` | Employer | Update status |
-| POST | `/api/employer/team/invite` | Employer | Invite team member |
-| GET | `/api/admin/stats` | Admin | Platform analytics |
-| GET | `/api/admin/users` | Admin | Manage users |
-| GET | `/api/admin/jobs` | Admin | Moderate jobs |
-| GET | `/api/notifications` | JWT | List notifications |
-
-### Authentication
-All protected endpoints require:
-```
-Authorization: Bearer <JWT_TOKEN>
-```
+| `POST` | `/api/auth/signup` | Register new user (Candidate / Employer) | Public |
+| `POST` | `/api/auth/login` | Authenticate user & issue JWT | Public |
+| `GET` | `/api/auth/me` | Fetch authenticated user profile | Private |
+| `GET` | `/api/jobs/search` | Search jobs with filters & pagination | Public |
+| `GET` | `/api/jobs/:id` | Get job details | Public |
+| `POST` | `/api/jobs/:id/apply` | Apply for a job | Candidate |
+| `POST` | `/api/employer/jobs` | Post a new job | Employer |
+| `GET` | `/api/employer/applications` | Review received applications | Employer |
+| `GET` | `/api/admin/stats` | Platform metrics & dashboard overview | Admin |
+| `GET` | `/api-docs` | Interactive Swagger API documentation | Public |
 
 ---
 
-## 👤 Creating an Admin User
+## 🛡️ Security & Best Practices
 
-After starting the server, run this in MongoDB shell or Mongo Compass:
-
-```js
-db.users.updateOne(
-  { email: "admin@example.com" },
-  { $set: { role: "admin", isVerified: true } }
-)
-```
+- **Zero Clear-Text Passwords**: Passwords hashed with `bcryptjs` (salt rounds: 10).
+- **Authentication**: Stateless JSON Web Tokens (JWT) with configurable expiry.
+- **Injection & DoS Protection**: Sanitized input validation, MongoDB query parameterization, and Express rate limiters on sensitive endpoints.
+- **CORS & Headers**: Tight CORS origin controls with Helmet security headers.
 
 ---
 
-## 🤖 AI Job Recommendation
+## 📄 License
 
-The recommendation engine uses **cosine similarity** between:
-- Candidate's `skills[]` array (from their profile)
-- Job's `skills[]` array (from the job posting)
-
-No external API needed. Implemented in `server/src/services/aiRecommend.js`.
-
----
-
-## 🔒 Security Features
-
-- JWT token authentication
-- Role-based access control (RBAC)
-- Express-validator input validation
-- Rate limiting (100 req/15min; stricter on auth endpoints)
-- Helmet HTTP security headers
-- CORS configuration
-- File upload type/size validation
-- Password hashing with bcrypt (cost factor 12)
-
----
-
-## 📧 Gmail SMTP Setup
-
-1. Enable 2-Factor Authentication on your Google account
-2. Go to **Google Account → Security → App Passwords**
-3. Generate an App Password for "Mail"
-4. Use it as `SMTP_PASSWORD` in `.env`
-
----
-
-## 🗄️ MongoDB Atlas Free Cluster
-
-1. Go to [mongodb.com/cloud/atlas](https://www.mongodb.com/cloud/atlas)
-2. Create a free M0 cluster
-3. Get your connection string: `mongodb+srv://...`
-4. Set it as `MONGODB_URI` in `.env`
-
----
-
-## 📝 Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Frontend | Next.js 14, Tailwind CSS, React Hook Form |
-| Backend | Node.js, Express.js, Mongoose |
-| Database | MongoDB (Atlas) |
-| Auth | JWT, Passport.js (Google OAuth 2.0) |
-| File Upload | Multer + Cloudinary |
-| Email | Nodemailer (Gmail SMTP) |
-| AI | Cosine similarity (pure JS) |
-| API Docs | Swagger UI + swagger-jsdoc |
-| Deployment | Vercel + Railway / Docker |
-
----
-
-## 🛠️ Troubleshooting
-
-### MongoDB Connection Failed (`ECONNREFUSED`)
-If you see `❌ MongoDB connection failed: querySrv ECONNREFUSED`, it usually means:
-1.  **IP Whitelist**: Your current IP is not allowed to connect to Atlas. Go to **Network Access** in MongoDB Atlas and click **Add Current IP Address**.
-2.  **DNS Issues**: Some networks block SRV records. Try using the standard connection string format if SRV continues to fail.
-3.  **Local Fallback**: If you have MongoDB installed locally, you can use `mongodb://localhost:27017/jobhai` in your `.env`.
-
-### Google OAuth Warning
-The server will start with a warning if `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are missing. This is **optional** and only hides the "Login with Google" button functionality.
+This project is licensed under the [MIT License](LICENSE).
+Built with ❤️ for Indian job seekers and employers by **NaukriMitra Team**.
